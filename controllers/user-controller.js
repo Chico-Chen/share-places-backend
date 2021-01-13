@@ -47,7 +47,7 @@ exports.signup = async (req, res, next) => {
     const createdUser = new User({
         username, 
         email, 
-        image: 'https://cropper.watch.aetnd.com/public-content-aetn.video.aetnd.com/video-thumbnails/AETN-History_VMS/21/202/tdih-may01-HD.jpg?w=1440',
+        image: req.file.path,
         password,
         places: []
     });

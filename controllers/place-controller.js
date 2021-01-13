@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const HttpError = require('../models/http-error');
 const { validationResult } = require('express-validator');
 const getCoordinateForAddress = require('../util/location');
+const fs = require('fs');
 
 const Place = require('../models/place');
 const User = require('../models/user');
@@ -44,7 +45,7 @@ exports.getPlacesByUserId = async (req, res, next) => {
 
     res.json(
         {
-            places: userWithPlaces.map(
+            places: userWithPlaces.places.map(
                 p => p.toObject({getters: true})
             )
         }
@@ -72,7 +73,7 @@ exports.createPlace = async(req, res, next) => {
         description: description,
         address: address,
         location: coordinates,
-        image: 'https://cropper.watch.aetnd.com/public-content-aetn.video.aetnd.com/video-thumbnails/AETN-History_VMS/21/202/tdih-may01-HD.jpg?w=1440',
+        image: req.file.path,
         creator
     });
 
@@ -151,6 +152,8 @@ exports.deletePlace = async (req, res, next) => {
         const error = new HttpError('Could not find the provided place.', 404);
         return next(error);
     }
+    
+    const imagePath = place.image;
 
     try {
         const sess = await mongoose.startSession();
@@ -163,6 +166,10 @@ exports.deletePlace = async (req, res, next) => {
         const error = new HttpError('Something went wrong, failed to delete the place, please try again later.', 422);
         return next(error);
     }
+
+    fs.unlink(image, err => {
+        console.log(err);
+    });
 
     res.status(200).json({message: 'Delete successfully'});
 }
